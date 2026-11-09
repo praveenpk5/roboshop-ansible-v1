@@ -2,7 +2,7 @@
   hosts: local
   connection: local
   vars:
-    instance: ["mongodb", "redis", "mysql", "rabbitmq"]
+    instances: ["mongodb", "redis", "mysql", "rabbitmq"]
     action: create
     domain_name: airobomachines.shop
     ami_id: ami-0055977a6e828a4f4
