@@ -25,5 +25,5 @@
   - name: enable and start redis
     service:
       name: redis
-      state: restarted
+      state: started
       enabled: yes 
