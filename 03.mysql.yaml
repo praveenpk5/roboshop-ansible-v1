@@ -7,11 +7,11 @@
 
   - name: install mysql
     package: 
-      name: mysql
+      name: mysql-server
       state: present
 
   - name: enable and start mysql
     service:                      
-      name: mysql               
-      state: restarted          
+      name: mysqld               
+      state: started          
       enabled: yes              
