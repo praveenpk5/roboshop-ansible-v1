@@ -1,0 +1,23 @@
+- name: configure rabbitmq server
+  hosts: rabbitmq
+  become: yes
+  tasks:
+    - name: copy rabbitmq repo
+      copy:
+        src: rabbitmq.repo
+        dest: /etc/yum.repos.d/rabbitmq.repo
+
+    - name: install rabbitmq serever
+      dnf:
+        name: 
+        - erlang 
+        - rabbitmq-server
+        state: present
+
+    - name: start and enable rabbitmq
+      service:
+        name: rabbitmq-server
+        state: started
+        enabled: yes
+
+        
