@@ -2,3 +2,10 @@ ansible_user: ec2-user
 ansible_password: DevOps321
 mongodb_host: mongodb.airobomachines.shop
 redis_host: redis.airobomachines.shop
+mysql_host: mysql.airobomachines.shop
+rabbitmq_host: rabbitmq.airobomachines.shop
+catalogue_host: catalogue.airobomachines.shop
+cart_host: cart.airobomachines.shop
+user_host: user.airobomachines.shop
+shipping_host: shipping.airobomachines.shop
+payment_host: payment.airobomachines.shop
