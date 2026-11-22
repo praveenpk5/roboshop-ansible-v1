@@ -14,18 +14,71 @@
       - mysql
       state: present 
 
-  - name: find java25 path
-    shell: readlink -f $(ls /usr/lib/jvm/java-25-openjdk*/bin/java | head -1) 
-    register: java25
+  # - name: find java25 path
+    # shell: readlink -f $(ls /usr/lib/jvm/java-25-openjdk*/bin/java | head -1) 
+    # register: java25
+# 
+  # - name: print output
+    # debug:
+      # msg: "{{ java25 }}"
+# 
+  # - name: make java25 as default
+    # command: alternatives --set java {{ java25.stdout }}
+# 
+  # - name: set JAVA_HOME
+    # copy:
+      # content: "export JAVA_HOME={{ java25.stdout | dirname | dirname  }}"
+      # dest: /etc/profile.d/java.sh
+# 
 
-  - name: print output
-    debug:
-      msg: "{{ java25 }}"
+- name: create roboshop system user
+  user:
+    name: roboshop
+    create_home: false
+    home: /app
+    system: true
+    shell: /sbin/nologin
+    comment: "roboshop system user"
 
-  - name: make java25 as default
-    command: alternatives --set java {{ java25.stdout }}
+- name: remove existing app directory
+  file:
+    path: /app
+    state: absent
 
-  - name: set JAVA_HOME
-    copy:
-      content: "export JAVA_HOME={{ java25.stdout | dirname | dirname  }}"
-      dest: /etc/profile.d/java.sh
+- name: remove shipping.zip
+  file:
+    path: /tmp/shipping.zip
+    state: absent
+
+- name: create app directory
+  file:
+    path: /app
+    state: directory
+
+- name: download shipping application
+  get_url:
+    url: https://raw.githubusercontent.com/daws-92s/roboshop-documentation/refs/heads/main/artifacts/shipping-v4.zip
+    dest: /tmp/shipping.zip
+
+- name: unzip shipping
+  unarchive:
+    src: /tmp/shipping.zip
+    dest: /app
+    remote_src: yes
+
+- name: mvn version without JAVA_HOME
+  command: mvn --version
+  args:
+    chdir: /app
+    register: mvn_default
+
+- name: print mvn version without JAVA_HOME
+  debug:
+    msg: "{{ mvn_default.stdout_lines }}"
+
+- name: build shipping
+  command: mvn clean package
+  args:
+    chdir: /app
+    # environment:
+    #   JAVA_HOME: "{{ java25.stdout | dirname | dirname  }}"
