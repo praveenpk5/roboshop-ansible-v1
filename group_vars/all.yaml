@@ -9,3 +9,8 @@ cart_host: cart.airobomachines.shop
 user_host: user.airobomachines.shop
 shipping_host: shipping.airobomachines.shop
 payment_host: payment.airobomachines.shop
+mysql_root_password: RoboShop@1
+shipping_db_user: shipping
+shipping_db_password: RoboShop@1
+rabbitmq_user: roboshop
+rabbitmq_password: roboshop123
