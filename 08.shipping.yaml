@@ -1,10 +1,10 @@
 - name: configure shipping server
   hosts: shipping
   become: yes
-  tasks: 
+  tasks:
   - name: enable maven 3.9
     command: dnf module enable maven:3.9 -y
-  
+
   - name: install maven and java25
     dnf:
       name:
@@ -12,24 +12,23 @@
       - java-25-openjdk-devel
       - maven-openjdk25 # installing this so that we no need to set JAVA_HOME again
       - mysql
-      state: present 
+      state: present
 
   # - name: find java25 path
-    # shell: readlink -f $(ls /usr/lib/jvm/java-25-openjdk*/bin/java | head -1) 
-    # register: java25
-# 
-  # - name: print output
-    # debug:
-      # msg: "{{ java25 }}"
-# 
+  #   shell: readlink -f $(ls /usr/lib/jvm/java-25-openjdk*/bin/java | head -1)
+  #   register: java25
+
+  # - name: print the output
+  #   debug:
+  #     msg: "{{ java25 }}"
+
   # - name: make java25 as default
-    # command: alternatives --set java {{ java25.stdout }}
-# 
+  #   command: alternatives --set java {{ java25.stdout }}
+
   # - name: set JAVA_HOME
-    # copy:
-      # content: "export JAVA_HOME={{ java25.stdout | dirname | dirname  }}"
-      # dest: /etc/profile.d/java.sh
-# 
+  #   copy:
+  #     content: "export JAVA_HOME={{ java25.stdout | dirname | dirname  }}"
+  #     dest: /etc/profile.d/java.sh
 
   - name: create roboshop system user
     user:
@@ -70,7 +69,7 @@
     command: mvn --version
     args:
       chdir: /app
-      register: mvn_default
+    register: mvn_default
 
   - name: print mvn version without JAVA_HOME
     debug:
@@ -79,13 +78,14 @@
   - name: build shipping
     command: mvn clean package
     args:
-      chdir: /app
-      
+     chdir: /app
+    # environment:
+    #   JAVA_HOME: "{{ java25.stdout | dirname | dirname  }}"
 
   - name: move shipping jar file
     command: mv target/shipping.jar shipping.jar
     args:
-      chdir: /app
+     chdir: /app
 
   - name: check cities data exist or not
     command: mysql -h "{{ mysql_host }}" -u root -p{{ mysql_root_password }} -N -B -e "SELECT COUNT(*) FROM cities.cities;"
@@ -94,34 +94,34 @@
     tags:
     - mysql
 
-    - name: print cities_count
-      debug:
-        msg: "{{ cities_count }}"
-      tags:
-      - mysql
-    
-    - name: load cities data into mysql
-      shell: mysql -h "{{ mysql_host }}" -u root -p{{ mysql_root_password }} < /app/db/master-data.sql
-      when: cities_count.rc != 0 or cities_count.stdout | int == 0
-      tags:
-        - mysql
+  - name: print cities_count
+    debug:
+      msg: "{{ cities_count }}"
+    tags:
+    - mysql
 
-    - name: create app user in mysql
-      shell: mysql -h "{{ mysql_host }}" -u root -p{{ mysql_root_password }} < /app/db/app-user.sql
-      tags:
-        - mysql
+  - name: load cities data into mysql
+    shell: mysql -h "{{ mysql_host }}" -u root -p{{ mysql_root_password }} < /app/db/master-data.sql
+    when: cities_count.rc != 0 or cities_count.stdout | int == 0
+    tags:
+    - mysql
 
-    - name: copy shipping service
-      template:
+  - name: create app user in mysql
+    shell: mysql -h "{{ mysql_host }}" -u root -p{{ mysql_root_password }} < /app/db/app-user.sql
+    tags:
+    - mysql
+
+  - name: copy shipping service
+    template:
       src: shipping.service.j2
       dest: /etc/systemd/system/shipping.service
 
-    - name: daemon reload
-      systemd_service:
+  - name: daemon reload
+    systemd_service:
       daemon_reload: true
 
-    - name: start and enable shipping
-      service:
-        name: shipping
-        state: restarted
-        enabled: yes
+  - name: start and enable shipping
+    service:
+      name: shipping
+      state: restarted
+      enabled: yes
