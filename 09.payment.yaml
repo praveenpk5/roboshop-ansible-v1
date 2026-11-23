@@ -59,7 +59,7 @@
     systemd_service:
       daemon_reload: true
 
-  - name: start and enable payment
+  - name: restarted and enable payment
     service:
       name: payment
       state: restarted
